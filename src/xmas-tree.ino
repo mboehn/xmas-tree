@@ -25,9 +25,12 @@
 #define LIGHTS_SPACE  4
 #define PIN           2
 #define BRIGHTNESS    5
-#define WAIT_SCENE   7000
+#define WAIT_SCENE   1000
 #define WAIT_LED      50
 #define NUMRINGS      6
+
+void neo_fill(uint32_t color, boolean single = true);
+void neo_fillrange(uint32_t color, uint16_t start, uint16_t stop, boolean single = true);
 
 int ringstart[] = {0, 32, 56, 72, 84, 92};
 int ringlen[] = {32, 24, 16, 12, 8, 1};
@@ -44,26 +47,35 @@ uint32_t white = neo.Color(127, 127, 127);
 uint32_t magenta = neo.Color(255, 0, 255);
 uint32_t yellow = neo.Color(255, 255, 0);
 
+uint32_t colors[] = {green, red, blue, white, magenta, yellow};
 
-void neo_fill(uint32_t color)
+
+void neo_fill(uint32_t color, boolean single)
 {
-  neo_fillrange(color, 0, neo.numPixels());
+  neo_fillrange(color, 0, neo.numPixels(), single);
 }
 
 
-void neo_fillrange(uint32_t color, uint16_t start, uint16_t stop)
+void neo_fillrange(uint32_t color, uint16_t start, uint16_t stop, boolean single)
 {
   for(uint16_t i=start; i <= stop; i++)
   {
     neo.setPixelColor(i, color);
+    if(single) {
+      neo.show();
+      delay(WAIT_LED);
+    }
+  }
+  if(!single)
+  {
     neo.show();
-    delay(WAIT_LED);
   }
 }
 
 
 uint32_t get_color(int ring)
 {
+  // FIXME: use colors array here?
   switch(ring)
   {
     case 0:
@@ -91,6 +103,7 @@ uint32_t get_color(int ring)
 
 void tree_ringcolors()
 {
+  // FIXME: use arrays in a better way here
   for (int i=0; i < NUMRINGS; i++)
   {
     for (int l=0; l < ringlen[i]; l++)
@@ -122,16 +135,25 @@ void tree_with_lights()
 
 void tree_with_colors()
 {
+
+  for (int i=0; i < (sizeof(colors) / sizeof(uint32_t)); i++)
+  {
+    neo_fill(colors[i]);
+  }
+  /*
   neo_fill(magenta);
   neo_fill(blue);
   neo_fill(green);
   neo_fill(red);
+  */
 }
 
 
 void tree_race()
 {
-  for(uint16_t i=neo.numPixels(); i >= 0; i--)
+  // XXX: this should probably be i >= 0, but I can't seem to understand why that fails with uint16_t and works with int.
+  // this looks quite OK though, so I'll keep it like this 'till I become smarter.
+  for(uint16_t i=neo.numPixels(); i > 0; i--)
   {
     if (i != neo.numPixels())
     {
@@ -140,12 +162,32 @@ void tree_race()
     neo.setPixelColor(i, white);
     neo.show();
     delay(WAIT_LED * 1.5);
-    if (i == 0)
+    if (i == 1) // XXX: and this is a hack to fix the 0 pixel.
     {
       neo.setPixelColor(i, off);
+      neo.setPixelColor(0, white);
       neo.show();
+      delay(WAIT_LED * 1.5);
+      neo.setPixelColor(0, off);
+      delay(WAIT_LED * 1.5);
     }
   }
+}
+
+void tree_blink()
+{
+  // FIXME: more automatic blinking?
+  // all off
+  neo_fill(off, false);
+  delay(WAIT_LED * 10);
+
+  neo_fill(green, false);
+  delay(WAIT_LED * 10);
+  neo_fill(off, false);
+  delay(WAIT_LED * 10);
+  neo_fill(green, false);
+  delay(WAIT_LED * 10);
+  neo_fill(off, false);
 }
 
 
@@ -162,12 +204,19 @@ void loop()
 {
   tree_with_lights();
   delay(WAIT_SCENE);
+
+  tree_blink();
+  delay(WAIT_SCENE);
+
   tree_with_colors();
   delay(WAIT_SCENE);
+
   tree_race();
   delay(WAIT_SCENE);
+
   tree_ringcolors();
   delay(WAIT_SCENE);
+
   neo_fill(off);
   delay(WAIT_SCENE);
 }
