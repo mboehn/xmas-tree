@@ -47,7 +47,13 @@ uint32_t yellow = neo.Color(255, 255, 0);
 
 void neo_fill(uint32_t color)
 {
-  for(int i=0; i < neo.numPixels(); i++)
+  neo_fillrange(color, 0, neo.numPixels());
+}
+
+
+void neo_fillrange(uint32_t color, uint16_t start, uint16_t stop)
+{
+  for(uint16_t i=start; i <= stop; i++)
   {
     neo.setPixelColor(i, color);
     neo.show();
@@ -103,7 +109,7 @@ void tree_with_lights()
 {
   neo_fill(green);
 
-  for (int i=0; i < neo.numPixels(); i++)
+  for (uint16_t i=0; i < neo.numPixels(); i++)
   {
     if ((i % LIGHTS_SPACE) == 0)
     {
@@ -125,7 +131,7 @@ void tree_with_colors()
 
 void tree_race()
 {
-  for(int i=neo.numPixels(); i >= 0; i--)
+  for(uint16_t i=neo.numPixels(); i >= 0; i--)
   {
     if (i != neo.numPixels())
     {
