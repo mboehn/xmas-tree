@@ -27,13 +27,10 @@
 #define BRIGHTNESS    5
 #define WAIT_SCENE   1000
 #define WAIT_LED      50
-#define NUMRINGS      6
 
-void neo_fill(uint32_t color, boolean single = true);
-void neo_fillrange(uint32_t color, uint16_t start, uint16_t stop, boolean single = true);
 
-int ringstart[] = {0, 32, 56, 72, 84, 92};
 int ringlen[] = {32, 24, 16, 12, 8, 1};
+int numrings = sizeof(ringlen) / sizeof(*ringlen);
 
 
 Adafruit_NeoPixel neo = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
@@ -49,7 +46,13 @@ uint32_t cyan = neo.Color(0, 255, 255);
 uint32_t white = neo.Color(127, 127, 127);
 
 uint32_t colors[] = {green, red, blue, yellow, magenta, cyan};
-int numcolors = sizeof(colors) / sizeof(uint32_t);
+int numcolors = sizeof(colors) / sizeof(*colors);
+
+
+void neo_fill(uint32_t color, boolean single = true);
+void neo_fillrange(uint32_t color, uint16_t start, uint16_t stop, boolean single = true);
+
+
 
 void neo_fill(uint32_t color, boolean single)
 {
@@ -87,18 +90,18 @@ uint32_t get_color(int ring)
 
 void tree_ringcolors()
 {
-  // FIXME: use arrays in a better way here
-  for (int i=0; i < NUMRINGS; i++)
+  int start = 0;
+  int stop = 0;
+  for (int i=0; i < numrings; i++)
   {
-    for (int l=0; l < ringlen[i]; l++)
+    if (i != 0)
     {
-      uint32_t color = get_color(i);
-      int led = l + ringstart[i];
-      neo.setPixelColor(led, color);
+      start = start + ringlen[i-1];
     }
-    delay(WAIT_LED);
+    stop = stop + ringlen[i];
+    uint32_t color = get_color(i);
+    neo_fillrange(color, start, stop, false);
   }
-  neo.show();
 }
 
 
