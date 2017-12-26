@@ -156,8 +156,6 @@ void tree_blink()
 
   uint32_t color = get_random_color();
 
-  // FIXME: more automatic blinking?
-  // all off
   neo_fill(off, false);
   delay(WAIT_LED * 10);
 
