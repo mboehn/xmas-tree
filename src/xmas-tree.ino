@@ -40,15 +40,16 @@ Adafruit_NeoPixel neo = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 
 uint32_t off = neo.Color(0, 0, 0);
-uint32_t green = neo.Color(0, 255, 0);
 uint32_t red = neo.Color(255, 0, 0);
+uint32_t green = neo.Color(0, 255, 0);
 uint32_t blue = neo.Color(0, 0, 255);
-uint32_t white = neo.Color(127, 127, 127);
-uint32_t magenta = neo.Color(255, 0, 255);
 uint32_t yellow = neo.Color(255, 255, 0);
+uint32_t magenta = neo.Color(255, 0, 255);
+uint32_t cyan = neo.Color(0, 255, 255);
+uint32_t white = neo.Color(127, 127, 127);
 
-uint32_t colors[] = {green, red, blue, white, magenta, yellow};
-
+uint32_t colors[] = {green, red, blue, yellow, magenta, cyan};
+int numcolors = sizeof(colors) / sizeof(uint32_t);
 
 void neo_fill(uint32_t color, boolean single)
 {
@@ -72,32 +73,15 @@ void neo_fillrange(uint32_t color, uint16_t start, uint16_t stop, boolean single
   }
 }
 
+uint32_t get_random_color()
+{
+  return colors[rand() % numcolors];
+}
 
 uint32_t get_color(int ring)
 {
-  // FIXME: use colors array here?
-  switch(ring)
-  {
-    case 0:
-      return green;
-      break;
-    case 1:
-      return red;
-      break;
-    case 2:
-      return magenta;
-      break;
-    case 3:
-      return blue;
-      break;
-    case 4:
-      return yellow;
-      break;
-    case 5:
-    default:
-      return white;
-      break;
-  }
+  // FIXME: this fails if num of rings if more than wanted colors... need some circular logic here, but math is not my strong suit.
+  return colors[ring];
 }
 
 
@@ -135,17 +119,10 @@ void tree_with_lights()
 
 void tree_with_colors()
 {
-
-  for (int i=0; i < (sizeof(colors) / sizeof(uint32_t)); i++)
+  for (int i=0; i < numcolors; i++)
   {
     neo_fill(colors[i]);
   }
-  /*
-  neo_fill(magenta);
-  neo_fill(blue);
-  neo_fill(green);
-  neo_fill(red);
-  */
 }
 
 
@@ -176,16 +153,23 @@ void tree_race()
 
 void tree_blink()
 {
+
+  uint32_t color = get_random_color();
+
   // FIXME: more automatic blinking?
   // all off
   neo_fill(off, false);
   delay(WAIT_LED * 10);
 
-  neo_fill(green, false);
+  neo_fill(color, false);
   delay(WAIT_LED * 10);
   neo_fill(off, false);
   delay(WAIT_LED * 10);
-  neo_fill(green, false);
+  neo_fill(color, false);
+  delay(WAIT_LED * 10);
+  neo_fill(off, false);
+  delay(WAIT_LED * 10);
+  neo_fill(color, false);
   delay(WAIT_LED * 10);
   neo_fill(off, false);
 }
